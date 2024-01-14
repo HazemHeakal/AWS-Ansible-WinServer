@@ -1,9 +1,15 @@
 - hosts: localhost
   gather_facts: no
   vars:
-    terraform_directory: "/home/hazem/AWS-Ansible-WinServer"  # Update with the path to your Terraform files
-    private_key_path: "/home/hazem/.ssh/id_rsa"  # Update with the path to your private key
+    terraform_directory: "/home/hazem/AWS-Ansible-WinServer"
+    private_key_path: "/home/hazem/.ssh/id_rsa"
     bash_script_path: "/home/hazem/AWS-Ansible-WinServer/Instance_Pass.sh"
+    decrypted_password_file: "/home/hazem/AWS-Ansible-WinServer/decrypted_password.txt"
+    terraform_state_file: "/home/hazem/AWS-Ansible-WinServer/terraform.tfstate"
+    ansible_user: 'Administrator'
+    ansible_connection: 'winrm'
+    ansible_winrm_transport: 'ntlm'
+    ansible_winrm_server_cert_validation: 'ignore'
 
   tasks:
     - name: Initialize Terraform
@@ -20,6 +26,89 @@
       command: "{{ bash_script_path }}"
       register: bash_script_output
 
-    - name: Display Decrypted Password
-      debug:
-        var: bash_script_output.stdout_lines
+    - name: Read Decrypted Password
+      shell: cat "{{ decrypted_password_file }}"
+      register: decrypted_password
+
+    - name: Set EC2 instance password
+      set_fact:
+        ansible_password: "{{ decrypted_password.stdout }}"
+
+    - name: Extract EC2 instance IP or DNS from Terraform state
+      command: jq -r '.resources[] | select(.type == "aws_instance") | .instances[] | .attributes.public_dns' "{{ terraform_state_file }}"
+      register: ec2_dns
+
+    - name: Wait for WinRM to be ready
+      wait_for_connection:
+        delay: 60
+        timeout: 300
+
+    - name: Add EC2 instance to host group
+      add_host:
+        name: "ec2_instance"
+        groups: "windows"
+        ansible_host: "{{ ec2_dns.stdout }}"
+        ansible_user: "{{ ansible_user }}"
+        ansible_password: "{{ ansible_password }}"
+        ansible_connection: "{{ ansible_connection }}"
+        ansible_winrm_transport: "{{ ansible_winrm_transport }}"
+        ansible_winrm_server_cert_validation: "{{ ansible_winrm_server_cert_validation }}"
+
+- hosts: windows
+  gather_facts: no
+
+  tasks:
+    - name: Install .NET 3.5
+      win_feature:
+        name: NET-Framework-Core
+        state: present
+
+    # Installing Amazon EC2Launch - replace with the actual installer URL and arguments if necessary
+    - name: Install Amazon EC2Launch
+      win_package:
+        path: 'https://s3.amazonaws.com/amazon-ec2launch-v2/windows/amd64/latest/AmazonEC2Launch.msi'
+        state: present
+        arguments: '/quiet'
+
+    # Installing Amazon SSM Agent
+    - name: Install Amazon SSM Agent
+      win_package:
+        path: 'https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/windows_amd64/AmazonSSMAgentSetup.exe'
+        state: present
+        arguments: '/quiet'
+
+    # Installing aws-cfn-bootstrap
+    # Assuming aws-cfn-bootstrap is a package that can be installed via a script or command
+    - name: Install aws-cfn-bootstrap
+      win_shell: 'Invoke-WebRequest -Uri "https://amazon.com/path/to/aws-cfn-bootstrap-install-script" -OutFile "cfn-bootstrap.ps1"; .\cfn-bootstrap.ps1'
+
+    # Installing IIS 10.0 Express
+    - name: Install IIS 10.0 Express
+      win_package:
+        path: 'https://download.microsoft.com/download/5/7/0/57065640-4665-4980-a2f1-4d5940b577b0/iisexpress_amd64_en-US.msi'
+        state: present
+        arguments: '/quiet'
+
+    # Installing Microsoft .NET 7.0 Templates
+    - name: Install Microsoft .NET 7.0 Templates
+      win_package:
+        path: 'https://download.visualstudio.microsoft.com/download/pr/1c8737a4-8cf1-4251-af5f-4a9c119a2489/c42c16d1f664719564353489c2b9b8d8/dotnet-sdk-7.0.401-win-x64.exe'
+        state: present
+        arguments: '/quiet'
+
+    # Installing Microsoft .NET AppHost Pack - 7.0.11
+    - name: Install Microsoft .NET AppHost Pack - 7.0.11
+      win_package:
+        path: 'https://download.visualstudio.microsoft.com/download/pr/1d0c7502-2e09-49d4-9794-1b7d129d7c28/3734f6f3f567f616f8c3a802aaf0e0b7/dotnet-hosting-7.0.11-win.exe'
+        state: present
+        arguments: '/quiet'
+
+    # Installing Microsoft .NET Framework 4.7.2 Targeting Pack
+    - name: Install Microsoft .NET Framework 4.7.2 Targeting Pack
+      win_package:
+        path: 'https://download.visualstudio.microsoft.com/download/pr/11100229/2cd2d2d31a3b036b0f0ebc8f0b5e40e1/NDP472-KB4054541-Web.exe'
+        state: present
+        arguments: '/quiet'
+
+
+
