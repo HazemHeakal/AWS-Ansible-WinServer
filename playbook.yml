@@ -58,12 +58,14 @@
   gather_facts: no
 
   tasks:
-    - name: Install .NET 3.5
-      win_feature:
-        name: NET-Framework-Core
+    # Installing Tools for .Net 3.5
+    - name: Install Tools for .Net 3.5
+      win_package:
+        path: 'https://download.microsoft.com/download/7/0/3/703455ee-a747-4cc8-bd3e-98a615c3aedb/dotNetFx35setup.exe'
         state: present
+        arguments: '/q'
 
-    # Installing Amazon EC2Launch - replace with the actual installer URL and arguments if necessary
+    # Installing Amazon EC2Launch
     - name: Install Amazon EC2Launch
       win_package:
         path: 'https://s3.amazonaws.com/amazon-ec2launch-v2/windows/amd64/latest/AmazonEC2Launch.msi'
@@ -78,37 +80,125 @@
         arguments: '/quiet'
 
     # Installing aws-cfn-bootstrap
-    # Assuming aws-cfn-bootstrap is a package that can be installed via a script or command
     - name: Install aws-cfn-bootstrap
-      win_shell: 'Invoke-WebRequest -Uri "https://amazon.com/path/to/aws-cfn-bootstrap-install-script" -OutFile "cfn-bootstrap.ps1"; .\cfn-bootstrap.ps1'
+      win_package:
+        path: 'https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-py3-win64-latest.exe'
+        state: present
+        arguments: '/quiet'
 
     # Installing IIS 10.0 Express
     - name: Install IIS 10.0 Express
       win_package:
-        path: 'https://download.microsoft.com/download/5/7/0/57065640-4665-4980-a2f1-4d5940b577b0/iisexpress_amd64_en-US.msi'
+        path: 'https://download.microsoft.com/download/C/E/8/CE8D18F5-D4C0-45B5-B531-ADECD637A1AA/iisexpress_amd64_en-US.msi'
         state: present
         arguments: '/quiet'
 
-    # Installing Microsoft .NET 7.0 Templates
-    - name: Install Microsoft .NET 7.0 Templates
+    # Installing Microsoft .NET Framework 4.8 SDK
+    - name: Install Microsoft .NET Framework 4.8 SDK
+      win_package:
+        path: 'https://download.visualstudio.microsoft.com/download/pr/febc46ff-cc68-4bee-83d2-c34786b5ca68/524ef9b25d29dc90efdb0fba0f589779/dotnet-sdk-7.0.405-win-x64.exe'
+        state: present
+        arguments: '/quiet'
+
+    # Installing Microsoft .NET Host - 7.0.11 (x64)
+    - name: Install Microsoft .NET Host - 7.0.11 (x64)
+      win_package:
+        path: 'https://download.visualstudio.microsoft.com/download/pr/56fbfa65-4bf5-40a0-8935-57f09ab3c76b/d80afe4b74d01c07ca74c4670fcfa1f8/aspnetcore-runtime-7.0.11-win-x64.exe'
+        state: present
+        arguments: '/quiet'
+
+    # Installing Microsoft .NET SDK 7.0.401 (x64) from Visual Studio
+    - name: Install Microsoft .NET SDK 7.0.401 (x64) from Visual Studio
       win_package:
         path: 'https://download.visualstudio.microsoft.com/download/pr/1c8737a4-8cf1-4251-af5f-4a9c119a2489/c42c16d1f664719564353489c2b9b8d8/dotnet-sdk-7.0.401-win-x64.exe'
         state: present
         arguments: '/quiet'
 
-    # Installing Microsoft .NET AppHost Pack - 7.0.11
-    - name: Install Microsoft .NET AppHost Pack - 7.0.11
+    # Installing Microsoft .NET Standard Targeting Pack - 2.1.0 (x64)
+    - name: Install Microsoft .NET Standard Targeting Pack - 2.1.0 (x64)
       win_package:
-        path: 'https://download.visualstudio.microsoft.com/download/pr/1d0c7502-2e09-49d4-9794-1b7d129d7c28/3734f6f3f567f616f8c3a802aaf0e0b7/dotnet-hosting-7.0.11-win.exe'
+        path: 'https://download.microsoft.com/download/9/1/7/917308D9-6C92-4DA5-B4B1-B4A19451E2D2/aspnetcore-runtime-2.1.0-win-x64.exe'
+        state: present
+        arguments: '/quiet'
+    # Installing Microsoft Analysis Services OLE DB Provider
+    - name: Install Microsoft Analysis Services OLE DB Provider
+      win_package:
+        path: 'https://download.microsoft.com/download/3/8/B/38B8BD8C-E6AB-4B9F-AB1E-03C59A477C48/1033/x64_16.0.5473.0_SQL_AS_OLEDB.msi'
         state: present
         arguments: '/quiet'
 
-    # Installing Microsoft .NET Framework 4.7.2 Targeting Pack
-    - name: Install Microsoft .NET Framework 4.7.2 Targeting Pack
+    # Installing Microsoft ODBC Driver 17 for SQL Server
+    - name: Install Microsoft ODBC Driver 17 for SQL Server
       win_package:
-        path: 'https://download.visualstudio.microsoft.com/download/pr/11100229/2cd2d2d31a3b036b0f0ebc8f0b5e40e1/NDP472-KB4054541-Web.exe'
+        path: 'https://download.microsoft.com/download/4/f/e/4fed6f4b-dc42-4255-b4b4-70f8e2a35a63/en-US/18.3.2.1/x64/msodbcsql.msi'
         state: present
         arguments: '/quiet'
 
+    # Installing Microsoft OLE DB Driver for SQL Server
+    - name: Install Microsoft OLE DB Driver for SQL Server
+      win_package:
+        path: 'https://download.microsoft.com/download/f/1/3/f13ce329-0835-44e7-b110-44decd29b0ad/en-US/19.3.2.0/x64/msoledbsql.msi'
+        state: present
+        arguments: '/quiet'
 
+    # Installing Microsoft SQL Server 2012 Native Client
+    - name: Install Microsoft SQL Server 2012 Native Client
+      win_package:
+        path: 'https://download.microsoft.com/download/B/E/D/BED73AAC-3C8A-43F5-AF4F-EB4FEA6C8F3A/ENU/x64/sqlncli.msi'
+        state: present
+        arguments: '/quiet'
 
+    # Installing Microsoft SQL Server 2019 LocalDB
+    - name: Install Microsoft SQL Server 2019 LocalDB
+      win_package:
+        path: 'https://download.microsoft.com/download/7/f/8/7f8a9c43-8c8a-4f7c-9f92-83c18d96b681/SQL2019-SSEI-Expr.exe'
+        state: present
+        arguments: '/quiet'
+
+    # Installing Microsoft System CLR Types for SQL Server 2019
+    - name: Install Microsoft System CLR Types for SQL Server 2019
+      win_package:
+        path: 'https://download.microsoft.com/download/d/d/1/dd194c5c-d859-49b8-ad64-5cbdcbb9b7bd/SQLSysClrTypes.msi'
+        state: present
+        arguments: '/quiet'
+
+    # Installing Microsoft Visual C++ 2019 X64 Additional Runtime
+    - name: Install Microsoft Visual C++ 2019 X64 Additional Runtime
+      win_package:
+        path: 'https://download.visualstudio.microsoft.com/download/pr/a061be25-c14a-489a-8c7c-bb72adfb3cab/4DFE83C91124CD542F4222FE2C396CABEAC617BB6F59BDCBDF89FD6F0DF0A32F/VC_redist.x64.exe'
+        state: present
+        arguments: '/quiet'
+
+    # Installing MySQL Installer - Community
+    - name: Install MySQL Installer - Community
+      win_package:
+        path: 'https://cdn.mysql.com//Downloads/MySQL-8.2/mysql-8.2.0-winx64.msi'
+        state: present
+        arguments: '/quiet'
+
+    # Installing MySQL Workbench 8.0 CE
+    - name: Install MySQL Workbench 8.0 CE
+      win_package:
+        path: 'https://cdn.mysql.com//Downloads/MySQLGUITools/mysql-workbench-community-8.0.34-winx64.msi'
+        state: present
+        arguments: '/quiet'
+
+    # Installing New Relic .NET Agent (64-bit)
+    - name: Install New Relic .NET Agent (64-bit)
+      win_package:
+        path: 'https://download.newrelic.com/dot_net_agent/latest_release/NewRelicDotNetAgent_10.20.1_x64.msi'
+        state: present
+        arguments: '/quiet'
+    # Installing SQL Server Management Studio
+    - name: Install SQL Server Management Studio
+      win_package:
+        path: 'https://download.microsoft.com/download/7/7/3/7738e337-ed99-40ea-b8ae-f639162c83c3/SSMS-Setup-ENU.exe'
+        state: present
+        arguments: '/quiet'
+
+    # Installing Wazuh Module
+    - name: Install Wazuh Module
+      win_package:
+        path: 'https://packages.wazuh.com/4.x/windows/wazuh-agent-4.7.2-1.msi'
+        state: present
+        arguments: '/quiet'
